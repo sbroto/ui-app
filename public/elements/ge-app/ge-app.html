@@ -1,0 +1,215 @@
+<!-- import polymer -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- import page level css -->
+<link rel="import" href="ge-app-styles.html">
+
+<!-- app route -->
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+
+<!-- I18n support -->
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../bower_components/px-app-helpers/px-app-route/px-app-route.html">
+
+<!-- Other components -->
+<link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+
+<!-- App components -->
+<link rel="import" href="../ge-app-layout/ge-app-horizontal-layout.html">
+<link rel="import" href="../ge-app-layout/ge-app-vertical-layout.html">
+
+<!-- Views-->
+<link rel="import" href="../views/view-1.html">
+<link rel="import" href="../views/view-2.html">
+
+<dom-module id="ge-app">
+    <template>
+
+        <style include="ge-app-css"></style>
+
+        <!-- Set language in iron-meta to share it amongst components -->
+        <iron-meta key="language" value="[[language]]"></iron-meta>
+
+        <!-- Route management -->
+        <app-location
+            id="carbonLocation"
+            route="{{_route}}"
+            url-space-regex="^/view">
+        </app-location>
+        <px-app-route
+            route="{{_route}}"
+            update-nav-route
+            nav-route="{{_navRoute}}">
+        </px-app-route>
+
+        <!-- Vertical or Horizontal navigation layout -->
+        <!-- Use the desired ge-app-XX-layout element -->
+        <ge-app-horizontal-layout
+            nav-items="[[navItems]]"
+            footer-links="[[footerLinks]]"
+            selected-route="{{_navRoute}}"
+            selected-item="{{selectedItem}}"
+            language="[[language]]"
+            resources="[[resources]]">
+
+            <!-- Views -->
+            <template is="dom-if" if="[[_isViewActive(selectedItem, 'view-1')]]">
+                <view-1 auto-refresh="[[_isViewActive(selectedItem, 'view-1')]]"></view-1>
+            </template>
+
+            <template is="dom-if" if="[[_isViewActive(selectedItem, 'view-2')]]">
+                <view-2 auto-refresh="[[_isViewActive(selectedItem, 'view-2')]]"></view-2>
+            </template>
+
+        </ge-app-horizontal-layout>
+
+
+    </template>
+
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "ge-app",
+
+            behaviors: [
+                Polymer.AppLocalizeBehavior,
+                Polymer.IronResizableBehavior
+            ],
+
+            properties: {
+
+                // Global application object
+                global: {
+                    type: Object,
+                    value: function () {
+                        return {
+                            name: "ge__app",
+                            session: {},
+                            version: "2.0"
+                        };
+                    }
+                },
+
+                language: {
+                    type: String,
+                    value: "en"
+                },
+
+                navItems: {
+                    type: Array,
+                    computed: "_setNavItems(localize)"
+                },
+
+                selectedItem: {
+                    type: Object
+                },
+
+                footerLinks: {
+                    type: Array,
+                    computed: "_setFooterLinks(localize)"
+                }
+            },
+
+            observers: [
+                "_localizeReady(localize)",
+                "_updateView(selectedItem)",
+                "_forceResize(selectedItem)"
+            ],
+
+            attached: function () {
+                this.loadResources(this.resolveUrl(this.is + "-labels.json"));
+            },
+
+            _localizeReady: function (localize) {
+                // Use an observer on localize to work around https://github.com/PolymerElements/app-localize-behavior/issues/57
+                document.title = localize("html.title");
+            },
+
+            _forceResize: function () {
+                // Notify views of resize to handle px-vis resize when page changes
+                this.notifyResize();
+            },
+
+            ready: function () {
+                this._checkForDefaultRoute();
+            },
+
+            _setNavItems: function (localize) {
+                const navItems = [
+                    {
+                        icon: "px-fea:dashboard",
+                        label: localize("menu.view1"),
+                        id: "view-1"
+                    }, {
+                        icon: "px-obj:plant",
+                        label: localize("menu.view2"),
+                        id: "view-2"
+                    }
+                ];
+
+                return navItems;
+            },
+
+            _setFooterLinks: function (localize) {
+                return [
+                    {
+                        label: localize("footer.privacy"),
+                        href: "#",
+                        target: "_blank"
+                    }, {
+                        label: localize("footer.terms"),
+                        href: "#",
+                        target: "_blank"
+                    }, {
+                        label: localize("footer.contact"),
+                        href: "#",
+                        target: "_blank"
+                    }, {
+                        label: localize("footer.accessibility"),
+                        href: "#",
+                        target: "_blank"
+                    }, {
+                        label: localize("footer.cookies"),
+                        href: "#",
+                        target: "_blank"
+                    }
+                ];
+            },
+
+            _updateView: function () {
+                if (this.selectedItem) {
+                    switch (this.selectedItem.id) {
+                        case "view-1":
+                        case "view-2":
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            },
+
+            _isViewActive: function (selectedItem, viewId) {
+                if (!selectedItem || !selectedItem.id || !viewId) {
+                    return false;
+                }
+                return selectedItem.id === viewId;
+            },
+
+            _checkForDefaultRoute: function () {
+                // Set default route to /view-1
+                if (window.location.pathname === "/") {
+                    window.history.replaceState({}, null, "/view-1");
+                    // Emit location-changed event to trigger the update of app-location
+                    window.dispatchEvent(new CustomEvent("location-changed"));
+                    // Emit popstate event to trigger highlighting in the side menu
+                    window.dispatchEvent(new CustomEvent("popstate"));
+                }
+            }
+        });
+    </script>
+</dom-module>

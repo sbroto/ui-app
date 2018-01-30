@@ -1,0 +1,26 @@
+@import "ge-app-layout-common.scss";
+
+// Horizontal nav with login
+.nav-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 1rem;
+    background-color: var(--px-app-nav-item-background-color);
+    box-shadow: $inuit-shadow-navigation;
+
+    .login-wrapper {
+        position: relative;
+    }
+}
+
+// Footer at the bottom of the viewport (at least)
+.view-wrapper {
+    display: flex;
+
+    main {
+        flex: 1;
+        min-width: 0;
+        min-height: calc(100vh - #{$branding-bar-height} - #{$horizontal-nav-height} - #{calculateRem($footer-height-px)});
+    }
+}

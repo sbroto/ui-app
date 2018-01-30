@@ -1,0 +1,116 @@
+#!groovy
+def CovServer = 'pdx.coverity.build.ge.com'
+
+pipeline {
+    agent none
+    options {
+        buildDiscarder(logRotator(artifactNumToKeepStr: '20', numToKeepStr: '20'))
+    }
+    triggers {
+        cron('H 0 * * *')
+    }
+    parameters {
+        string(name: 'COVERITY_STREAM', defaultValue: 'ge-ui-app', description: 'Coverity stream name')
+        choice(
+            choices: 'Default\nFull scan',
+            description: 'Scan mode (choose \'Full scan\' if you also want to scan all dependencies',
+            name: 'SCAN_MODE')
+    }
+    stages {
+
+        stage ('Clean workspace') {
+            agent {
+                docker {
+                    image 'alpine'
+                    label 'dind'
+                }
+            }
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage ('Build') {
+            agent {
+                docker {
+                    image 'node:8'
+                    label 'dind'
+                }
+            }
+            environment {
+                CACHING_REPO_URL = 'https://repo.ci.build.ge.com/artifactory/api/npm/npm-virtual/'
+            }
+            when {
+                expression {
+                    return params.SCAN_MODE == 'Full scan'
+                }
+            }
+            steps {
+                sh 'npm config set strict-ssl false'
+                sh 'npm config set registry $CACHING_REPO_URL'
+                sh 'yarn global add bower'
+                sh 'yarn global add gulp-cli'
+                sh 'yarn install'
+                sh 'bower --allow-root install'
+            }
+            post {
+                success {
+                    echo 'Build stage completed'
+                }
+                failure {
+                    echo 'Build stage failed'
+                }
+            }
+        }
+        // See README for instructions on what you need to configure for coverity scan
+        stage ('Coverity Scan') {
+            agent {
+            	docker {
+                    image 'repo.ci.build.ge.com:8443/predixci-coverity8.7.1'
+                    label 'dind'
+                }
+
+            }
+            environment {
+                COVERITY = credentials('Coverity_Token')
+            }
+            steps {
+                sh 'rm -rf $WORKSPACE/covtemp'
+                sh 'mkdir -p $WORKSPACE/covtemp'
+                sh '/opt/cov-analysis-linux64-8.7.1/bin/cov-configure --config coverity_js_config.xml --javascript'
+                sh '/opt/cov-analysis-linux64-8.7.1/bin/cov-build --config coverity_js_config.xml --dir $WORKSPACE/covtemp --no-command --fs-capture-search $WORKSPACE --fs-capture-search-exclude-regex \'[/\\\\]dist\$\' --fs-capture-search-exclude-regex \'[/\\\\]covtemp\$\''
+                sh '/opt/cov-analysis-linux64-8.7.1/bin/cov-analyze --config coverity_js_config.xml --dir $WORKSPACE/covtemp'
+                sh "/opt/cov-analysis-linux64-8.7.1/bin/cov-commit-defects --dir $WORKSPACE/covtemp --host '${CovServer}' --https-port 8443 --stream '${params.COVERITY_STREAM}' --user $COVERITY_USR --password $COVERITY_PSW"
+                sh "/opt/cov-analysis-linux64-8.7.1/bin/cov-manage-im --mode defects --stream '${params.COVERITY_STREAM}' --host '${CovServer}' --ssl --user $COVERITY_USR --password $COVERITY_PSW --show > coverity_result.csv"
+                script {
+                    def defectsNumber = sh (
+                        script: "cat coverity_result.csv | wc -l",
+                        returnStdout: true
+                    ).trim().toInteger() - 1
+                    echo "${defectsNumber} defects found"
+                    if (defectsNumber > 0) {
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+            post {
+                success {
+                    echo "Coverity-Scan stage completed"
+                }
+                failure {
+                    echo "Coverity-Scan stage failed"
+                }
+            }
+        }
+   }
+    post {
+        success {
+            echo 'Scan completed'
+        }
+        failure {
+            echo 'Scan failed'
+            mail to:"stephane.pilla@ge.com, mathieu.clement@ge.com", subject:"FAILURE: ${currentBuild.fullDisplayName}", body: "Something went wrong with the coverity check. See error in here: ${env.BUILD_URL}"
+        }
+    }
+
+}

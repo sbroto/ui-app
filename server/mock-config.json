@@ -1,0 +1,7 @@
+{
+    "withSecurity" : true,
+    "services" : {
+        "predix-asset": "mock",
+        "predix-timeseries": "mock"
+    }
+}

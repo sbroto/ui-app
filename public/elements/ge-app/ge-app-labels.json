@@ -1,0 +1,19 @@
+{
+    "en": {
+        "html.title" : "ge_app__title",
+
+        "title" : "ge_app__title",
+
+        "menu.view1": "View",
+        "menu.view2": "Data Example",
+
+        "Sign In": "Sign In",
+        "Sign Out": "Sign Out",
+
+        "footer.privacy": "Privacy",
+        "footer.terms": "Terms",
+        "footer.contact": "Contact",
+        "footer.accessibility": "Accessibility",
+        "footer.cookies": "Cookies"
+    }
+}

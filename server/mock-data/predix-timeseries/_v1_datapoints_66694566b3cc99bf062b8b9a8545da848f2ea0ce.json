@@ -1,0 +1,47 @@
+{
+  "requestUrl": "/v1/datapoints",
+  "contentType": "application/json; charset=UTF-8",
+  "method": "POST",
+  "statusCode": 200,
+  "data": {
+    "tags": [
+      {
+        "name": "plant2.unit2.particles",
+        "results": [
+          {
+            "values": [],
+            "attributes": {}
+          }
+        ],
+        "stats": {
+          "rawCount": 0
+        }
+      },
+      {
+        "name": "plant2.unit2.co",
+        "results": [
+          {
+            "values": [],
+            "attributes": {}
+          }
+        ],
+        "stats": {
+          "rawCount": 0
+        }
+      },
+      {
+        "name": "plant2.unit2.so",
+        "results": [
+          {
+            "values": [],
+            "attributes": {}
+          }
+        ],
+        "stats": {
+          "rawCount": 0
+        }
+      }
+    ]
+  },
+  "isBase64": false
+}

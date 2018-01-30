@@ -1,0 +1,304 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- I18n supoprt -->
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../bower_components/px-card/px-card.html">
+<link rel="import" href="../../bower_components/px-vis-timeseries/px-vis-timeseries.html">
+<link rel="import" href="../../bower_components/px-spinner/px-spinner.html">
+<link rel="import" href="../../bower_components/px-dropdown/px-dropdown.html">
+
+<!-- Service components -->
+<link rel="import" href="../../services/asset-service.html">
+<link rel="import" href="../../services/timeseries-service.html">
+
+<!-- App components -->
+<link rel="import" href="../error-modal/error-modal.html">
+
+<link rel="import" href="auto-refresh-behavior.html">
+<link rel="import" href="view-2-styles.html">
+
+<dom-module id="view-2">
+    <template>
+        <style include="view-2-css"></style>
+
+        <header class="header">
+            <h1 class="title">
+                [[localize("title")]]
+            </h1>
+        </header>
+
+        <px-card icon="px-obj:plant" header-text="[[localize('card.header')]]">
+            <p>
+                [[localize("card.content")]]
+            </p>
+
+            <div class="dropdown-container">
+                <px-dropdown id="dropdown"
+                             items="[[dropdownItems]]"
+                             display-value="Select"
+                             selected="{{selected}}"
+                             allow-outside-scroll
+                             disable-clear>
+                </px-dropdown>
+
+                <px-spinner id="spinner" size="25" class="spinner"></px-spinner>
+            </div>
+
+            <px-vis-timeseries
+                class="ts-graph"
+                margin='{"top":10,"bottom":60,"left":65,"right":60}'
+                chart-data="[[chartConfig.chartData]]"
+                series-config="[[chartConfig.seriesConfig]]"
+                y-axis-config="[[chartConfig.yAxisConfig]]"
+                threshold-data="[[chartConfig.thresholdData]]"
+                show-tooltip
+                tooltip-config='{"timezone": "[[timezone]]", "tooltipStyle": "dark"}'
+                register-config='{"timezone": "[[timezone]]"}'
+                hide-gridlines-x
+                disable-navigator
+                toolbar-config='{"config": {"advancedZoom": true, "pan": true}}'
+                x-axis-type="timeLocal"
+                render-to-canvas>
+            </px-vis-timeseries>
+        </px-card>
+
+
+        <!-- Get units from asset service -->
+        <asset-service
+            query="/unit"
+            result="{{assets}}"
+            last-error="{{assetLastError}}"
+            auto
+        ></asset-service>
+
+        <!-- Get datapoints from timeseries service -->
+        <timeseries-service
+            id="tsService"
+            tags="[[tags]]"
+            start="1h-ago"
+            raw-ts-data="{{rawTsData}}"
+            last-error="{{tsLastError}}"
+            auto
+        ></timeseries-service>
+
+        <error-modal id="errorModal"></error-modal>
+    </template>
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "view-2",
+
+            behaviors: [
+                Polymer.AppLocalizeBehavior,
+                window.geAppBehaviors.autoRefreshBehavior
+            ],
+
+            properties: {
+                language: {
+                    type: String,
+                    value: function () {
+                        return document.createElement("iron-meta").byKey("language");
+                    }
+                },
+
+                // Asset & Ts data
+                assets: {
+                    type: Array,
+                    observer: "_setDropdownItems"
+                },
+
+                asset: {
+                    type: Object,
+                    observer: "_getTimeSeries"
+                },
+
+                tags: {
+                    type: Array
+                },
+
+                rawTsData: {
+                    type: Object,
+                    observer: "_displayTimeSeries"
+                },
+
+                // Dropdown properties
+                dropdownItems: {
+                    type: Array,
+                    value: function () {
+                        return [];
+                    }
+                },
+
+                selected: {
+                    type: String
+                },
+
+                // Chart properties
+                chartConfig: {
+                    type: Object
+                },
+
+                timezone: {
+                    type: String,
+                    value: function () {
+                        return new Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    }
+                },
+
+                // Error management
+                assetLastError: {
+                    type: Object
+                },
+
+                tsLastError: {
+                    type: Object
+                }
+            },
+
+            observers: [
+                "_handleError(assetLastError)",
+                "_handleError(tsLastError)"
+            ],
+
+            listeners: {
+                "px-dropdown-selection-changed": "_setSelectedItem"
+            },
+
+            attached: function () {
+                this.loadResources(this.resolveUrl(this.is + "-labels.json"));
+            },
+
+            ready: function () {
+                console.log("view 2 ready()");
+                this.$.spinner.show();
+            },
+
+            _setDropdownItems: function () {
+                if (Array.isArray(this.assets)) {
+                    this.dropdownItems = this.assets.map(function (asset) {
+                        return {
+                            key: asset.uri,
+                            val: asset.name + " (" + asset.uri + ")"
+                        };
+                    });
+
+                    if (this.dropdownItems.length > 0) {
+                        this.selected = this.dropdownItems[0].key;
+                    }
+                } else {
+                    console.log("No asset data returned");
+                }
+            },
+
+            _setSelectedItem: function (event) {
+                // Ignore deselection events
+                if (!event.detail.selected) {
+                    return;
+                }
+
+                if (event.detail.key) {
+                    this.asset = this.assets.find(function (asset) {
+                        return asset.uri === event.detail.key;
+                    });
+                }
+
+            },
+
+            _getTimeSeries: function () {
+                const tagsTmp = [];
+
+                // For the example, build the request with the first 3 data tags of that asset
+                if (Array.isArray(this.asset.data)) {
+                    this.asset.data.forEach(function (item, index) {
+                        if (item.tag && index < 3) { // eslint-disable-line no-magic-numbers
+                            tagsTmp.push({name: item.tag});
+                        }
+                    });
+                }
+
+                if (tagsTmp.length > 0) {
+                    this.$.spinner.show();
+                    // The timeseries service will automatically send a new request
+                    // whenever a new tag object is built (thanks to the 'auto' attribute)
+                    this.tags = tagsTmp;
+
+                } else {
+                    this.rawTsData = {tags: []};
+                }
+            },
+
+            _displayTimeSeries: function () {
+                const tagProperties = {};
+                const tagThresholds = {};
+                let i = 1;
+
+                this.$.spinner.hide();
+
+                if (!this.rawTsData || !Array.isArray(this.rawTsData.tags)) {
+                    console.log("No timeseries data returned");
+                    return;
+                }
+
+                // Build object for tag titles for graph legend and for thresholds configuration
+                this.rawTsData.tags.forEach(function (tagData) {
+                    const tag = tagData.name;
+                    const data = this.asset.data.find(function (tData) {
+                        return tData.tag === tag;
+                    });
+
+                    tagProperties[tag] = {};
+                    tagProperties[tag].title = data ? data.key : tag;
+                    tagProperties[tag].unit = data ? data.unit : "";
+                    // TagProperties[tag].color = ...;
+
+                    // This example generates dummy thresholds. They should come from the asset model.
+                    tagThresholds[tag] = {value: 50 * i, type: "max"}; // eslint-disable-line no-magic-numbers
+                    i++;
+                }, this);
+
+                // Build data and config for the chart
+                const newChartConfig = this.$.tsService.buildTsChartData(
+                    this.rawTsData.tags, "Emissions", "unit", tagProperties, tagThresholds);
+
+                // Add a default series config because px-vis-timeseries doesn't handle properly empty configs
+                if (Object.keys(newChartConfig.seriesConfig).length === 0) {
+                    newChartConfig.seriesConfig.unknown = {
+                        name: " ",
+                        x: "x",
+                        y: "y_unknown",
+                        yAxisUnit: "unit"
+                    };
+                }
+
+                // Add a default chart data array because px-vis-timeseries doesn't handle properly empty data arrays
+                if (newChartConfig.chartData.length === 0) {
+                    newChartConfig.chartData = [{x: 0, y: 0}];
+                }
+
+                this.chartConfig = newChartConfig;
+            },
+
+            refresh: function () {
+                // View refresh logic
+                if (this.asset) {
+                    console.log("Refresh view 2");
+                    this._getTimeSeries();
+                }
+            },
+
+            _handleError: function (lastError) {
+                this.$.spinner.hide();
+                if (lastError) {
+                    this.$.errorModal.handleError(lastError);
+                }
+
+            }
+
+        });
+    </script>
+</dom-module>

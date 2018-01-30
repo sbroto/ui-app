@@ -1,0 +1,334 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="timeseries-service">
+
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "timeseries-service",
+            properties: {
+                serviceEndpoint: {
+                    type: String,
+                    value: "/api/predix-timeseries/v1/datapoints"
+                },
+
+                /**
+                 * Start date for the payload of the POST request
+                 * ex : relative date : "1y-ago"
+                 * ex : absolute date : 1427463525000
+                 * @see timeseries documentation
+                 */
+                start: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * End date for the payload of the POST request
+                 * ex : relative date : "1ms-ago"
+                 * ex : absolute date : 1427483525000
+                 * ex : now : ""
+                 * @see timeseries documentation
+                 */
+                end: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * List of tags for the payload of the POST request
+                 * ex : [{name: "myTagName", limit: 100, order: "desc"}, ...]
+                 * name is mandatory
+                 * limit & order are optional
+                 * @see timeseries documentation
+                 */
+                tags: {
+                    type: Array
+                },
+
+                rawTsData: {
+                    type: Object,
+                    notify: true
+                },
+
+                lastError: {
+                    type: Object,
+                    notify: true
+                },
+
+                auto: {
+                    type: Boolean,
+                    value: false
+                },
+
+                _queryPayload: {
+                    type: Object,
+                    computed: "_computeQueryPayload(start, end, tags)"
+                }
+            },
+
+            observers: [
+                "_onAutoChanged(auto, _queryPayload)"
+            ],
+
+            _onAutoChanged: function () {
+                if (this.auto) {
+                    this.generateRequest();
+                }
+            },
+
+            _computeQueryPayload: function (start, end, tags) {
+                const queryObj = {};
+
+                if (start) {
+                    queryObj.start = isNaN(start) ? start : parseInt(start, 10);
+                }
+                if (end) {
+                    queryObj.end = isNaN(end) ? end : parseInt(end, 10);
+                }
+
+                if (tags && Array.isArray(tags)) {
+                    queryObj.tags = tags.slice();
+                }
+
+                return queryObj;
+            },
+
+            generateRequest: function () {
+                const self = this;
+
+                return fetch(self.serviceEndpoint, {
+                    credentials: "include",
+                    headers: new Headers({"content-type": "application/json"}),
+                    method: "POST",
+                    body: JSON.stringify(self._queryPayload)
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            self.lastError = {status: response.status};
+                            throw self.lastError;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+
+                        self.rawTsData = data;
+
+                    })
+                    .catch(function (error) {
+                        console.log("Error while getting timeseries data",
+                            error);
+                        self.lastError = error;
+                    });
+            },
+
+            _forEachFilteredResult: function (tsTagsData, dataTypeFilter, fn) {
+
+
+                tsTagsData.forEach(function (tag) {
+
+                    // Tag properly defined
+                    if (tag.name && Array.isArray(tag.results)) {
+
+                        // Get all results
+                        tag.results.forEach(function (result) {
+
+                            // Result properly defined
+                            if (Array.isArray(result.groups) && Array.isArray(result.values)) {
+
+                                // Filter by datapoint type
+                                if (!dataTypeFilter ||
+                                    result.groups.find(function (group) {
+                                        return group && group.name === "type" && group.type === dataTypeFilter;
+                                    })) {
+
+                                    if (typeof fn === "function") {
+                                        fn(tag.name, result.values);
+                                    }
+                                }
+                            }
+
+                        });
+                    }
+                });
+
+            },
+
+            /**
+             * Builds an object of tags from the timeseries payload
+             * @param dataTypeFilter - Filter by datapoint type (done on client side, because not yet available in ts query API)
+             * @param chrono - Reorder by chronological or reverse chronological order
+             */
+            getDataPointsAsObject: function (tsTagsData, dataTypeFilter, chrono) {
+                const tsValues = {};
+
+                // Payload has an array of tags
+
+                // Save as object
+                this._forEachFilteredResult(tsTagsData, dataTypeFilter, function (tag, values) {
+                    tsValues[tag] = (tsValues[tag] || []).concat(values);
+                });
+
+
+                // Reorder
+                Object.keys(tsValues).forEach(function (tag) {
+                    tsValues[tag].sort(function (datapoint1, datapoint2) {
+                        const time1 = Array.isArray(datapoint1) && datapoint1.length > 0 ? datapoint1[0] : 0;
+                        const time2 = Array.isArray(datapoint2) && datapoint2.length > 0 ? datapoint2[0] : 0;
+
+                        return chrono ? (Number(time1) - Number(time2)) : (Number(time2) - Number(time1));
+                    });
+
+                });
+
+                return tsValues;
+            },
+
+            /**
+             * Builds an array of coordinates from the timeseries payload
+             */
+            _getDataPointsAsChartData: function (tsTagsData, yLabels) {
+                const numberOfCoordinates = 2;
+                const tsMap = new Map();
+                const tsArr = [];
+                let curr;
+
+                // Payload has an array of tags
+
+                this._forEachFilteredResult(tsTagsData, "number", function (tag, values) {
+
+                    // Save in a Map indexed by timestamp
+                    values.forEach(function (value) {
+
+                        if (Array.isArray(value) && values[0].length >= numberOfCoordinates) {
+                            curr = tsMap.get(value[0]) || {};
+                            curr[yLabels[tag]] = value[1];
+                            tsMap.set(value[0], curr);
+                        }
+
+                    });
+                });
+
+                // Build array of coordinates
+                tsMap.forEach(function (values, key) {
+                    tsArr.push(Object.assign({x: key}, values));
+                });
+
+                // Reorder
+                return tsArr.sort(function (item1, item2) {
+                    return Number(item1.x) - Number(item2.x);
+                });
+            },
+
+            /**
+             * Builds an array with objects containing all data necessary for px-vis-timeseries display
+             * (chart data, series config, threshold data, ...)
+             * builds only one yAxis with the same unit
+             * @param {array} tsTagsData - timeseries tags data (rawTSData.tags)
+             * @param {string} yTitle (optional) - title for the y axis (if missing, will create 1 y-axis per tag)
+             * @param {string} yUnit (optional) - unit to display for the y axis (only for single y-axis)
+             * @param {object} tagProps - tag properties for the chart: key = tag name, value = {title, unit, color}
+             * @param {object} thresholds (optional) - threshold values and types to display for each tag of the graph
+             * example: {tag1: {type: "max", value: 100}, tag2: {type: "min", value: 50}}
+             */
+            buildTsChartData: function (tsTagsData, yTitle, yUnit, tagProps, thresholds) {
+                const seriesConfig = {};
+                const thresholdData = [];
+                const yLabels = {};
+                const yAxisConfig = {
+                    title: yTitle,
+                    titleTruncation: false
+                };
+
+                tsTagsData.forEach(function (tagData, index) {
+                    const tag = tagData.name;
+
+                    yLabels[tag] = "y_" + tag;
+
+                    // Px-vis-timeseries doesn't handle properly "." in the series names
+                    yLabels[tag] = yLabels[tag].replace("_", "__").replace(".", "_");
+
+                    seriesConfig[yLabels[tag]] = {
+                        name: tagProps[tag].title,
+                        x: "x",
+                        y: yLabels[tag],
+                        yAxisUnit: yUnit,
+                        color: tagProps[tag].color
+                    };
+
+                    if (!yTitle) {
+                        seriesConfig[yLabels[tag]].yAxisUnit = tagProps[tag].unit;
+
+                        seriesConfig[yLabels[tag]].axis = {
+                            id: "axis" + index,
+                            side: "left",
+                            number: index
+                        };
+
+                        yAxisConfig["axis" + index] = {
+                            title: tagProps[tag].title,
+                            titleTruncation: false
+                        };
+                    }
+                });
+
+                // Build chart data from time series data
+                const tsChartData = this._getDataPointsAsChartData(tsTagsData, yLabels);
+
+                if (thresholds) {
+                    this._buildThresholdData(tsChartData, thresholds, yLabels, seriesConfig, thresholdData);
+                }
+
+                return {
+                    chartData: tsChartData,
+                    seriesConfig: seriesConfig,
+                    thresholdData: thresholdData,
+                    yAxisConfig: yAxisConfig
+                };
+            },
+
+            _buildThresholdData: function (tsChartData, thresholds, yLabels, seriesConfig, thresholdData) {
+                const thresholdValues = [];
+
+                /* eslint-disable guard-for-in */
+                for (const tag in thresholds) {
+                    const yLabel = yLabels[tag];
+
+                    thresholdData.push({
+                        for: yLabel,
+                        type: thresholds[tag].type,
+                        value: thresholds[tag].value
+                    });
+                    thresholdValues.push(thresholds[tag].value);
+
+                    // Configure min and max y boundaries for each tag to make sure to see the threshold
+                    const filteredArray = tsChartData.filter(function (item) {
+                        return item[yLabel] !== undefined;
+                    });
+
+                    if (filteredArray.length > 0) {
+
+                        const minData = filteredArray.reduce(function (acc, item) {
+                            return acc < item[yLabel] ? acc : item[yLabel];
+                        }, filteredArray[0][yLabel]);
+                        const maxData = filteredArray.reduce(function (acc, item) {
+                            return acc > item[yLabel] ? acc : item[yLabel];
+                        }, filteredArray[0][yLabel]);
+
+                        const addedMargin = 10;
+
+                        if (minData && maxData) {
+                            seriesConfig[yLabel].yMin = Math.min(thresholds[tag].value, minData) - addedMargin;
+                            seriesConfig[yLabel].yMax = Math.max(thresholds[tag].value, maxData) + addedMargin;
+                        }
+                    }
+                }
+                /* eslint-enable guard-for-in */
+
+            }
+
+        });
+    </script>
+</dom-module>

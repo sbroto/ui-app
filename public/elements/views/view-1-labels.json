@@ -1,0 +1,9 @@
+{
+    "en": {
+        "title" : "View 1",
+        "card.header": "Demo Card 1",
+        "card.content": "Replace this with the actual content for your application.",
+
+        "button.label": "Click Me!"
+    }
+}

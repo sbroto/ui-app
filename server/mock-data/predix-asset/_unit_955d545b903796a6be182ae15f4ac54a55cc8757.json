@@ -1,0 +1,203 @@
+{
+  "requestUrl": "/unit",
+  "contentType": "application/json; charset=utf-8",
+  "method": "GET",
+  "statusCode": 200,
+  "data": [
+    {
+      "uri": "/unit/unit1_1",
+      "name": "Unit 1",
+      "parent": "/plant/plant1",
+      "data": [
+        {
+          "key": "particles",
+          "tag": "plant1.unit1.particles",
+          "unit": "ppm"
+        },
+        {
+          "key": "co",
+          "tag": "plant1.unit1.co",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "so",
+          "tag": "plant1.unit1.so",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "no",
+          "tag": "plant1.unit1.no",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "o2",
+          "tag": "plant1.unit1.o2",
+          "unit": "%"
+        },
+        {
+          "key": "gasTemp",
+          "tag": "plant1.unit1.gasTemp",
+          "unit": "°C"
+        },
+        {
+          "key": "humidity",
+          "tag": "plant1.unit1.humidity",
+          "unit": "%"
+        },
+        {
+          "key": "opacity",
+          "tag": "plant1.unit1.opacity",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "parent": "/plant/plant1_4",
+      "data": "",
+      "name": "unit 1",
+      "uri": "/unit/unit1_1_4"
+    },
+    {
+      "uri": "/unit/unit1_2",
+      "name": "Unit 1",
+      "parent": "/plant/plant2",
+      "data": [
+        {
+          "key": "co",
+          "tag": "plant2.unit1.co",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "so",
+          "tag": "plant2.unit1.so",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "no",
+          "tag": "plant2.unit1.no",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "o2",
+          "tag": "plant2.unit1.o2",
+          "unit": "%"
+        },
+        {
+          "key": "particles",
+          "tag": "plant2.unit1.particles",
+          "unit": "ppm"
+        },
+        {
+          "key": "gasTemp",
+          "tag": "plant2.unit1.gasTemp",
+          "unit": "°C"
+        },
+        {
+          "key": "humidity",
+          "tag": "plant2.unit1.humidity",
+          "unit": "%"
+        },
+        {
+          "key": "opacity",
+          "tag": "plant2.unit1.opacity",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "uri": "/unit/unit2_1",
+      "name": "Unit 2",
+      "parent": "/plant/plant1",
+      "data": [
+        {
+          "key": "humidity",
+          "tag": "plant1.unit2.humidity",
+          "unit": "%"
+        },
+        {
+          "key": "opacity",
+          "tag": "plant1.unit2.opacity",
+          "unit": "%"
+        },
+        {
+          "key": "particles",
+          "tag": "plant1.unit2.particles",
+          "unit": "ppm"
+        },
+        {
+          "key": "gasTemp",
+          "tag": "plant1.unit2.gasTemp",
+          "unit": "°C"
+        },
+        {
+          "key": "co",
+          "tag": "plant1.unit2.co",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "so",
+          "tag": "plant1.unit2.so",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "no",
+          "tag": "plant1.unit2.no",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "o2",
+          "tag": "plant1.unit2.o2",
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "uri": "/unit/unit2_2",
+      "name": "Unit 2",
+      "parent": "/plant/plant2",
+      "data": [
+        {
+          "key": "particles",
+          "tag": "plant2.unit2.particles",
+          "unit": "ppm"
+        },
+        {
+          "key": "co",
+          "tag": "plant2.unit2.co",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "so",
+          "tag": "plant2.unit2.so",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "no",
+          "tag": "plant2.unit2.no",
+          "unit": "mg/Nm3"
+        },
+        {
+          "key": "o2",
+          "tag": "plant2.unit2.o2",
+          "unit": "%"
+        },
+        {
+          "key": "gasTemp",
+          "tag": "plant2.unit2.gasTemp",
+          "unit": "°C"
+        },
+        {
+          "key": "humidity",
+          "tag": "plant2.unit2.humidity",
+          "unit": "%"
+        },
+        {
+          "key": "opacity",
+          "tag": "plant2.unit2.opacity",
+          "unit": "%"
+        }
+      ]
+    }
+  ],
+  "isBase64": false
+}

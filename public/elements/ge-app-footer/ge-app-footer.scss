@@ -1,0 +1,39 @@
+// Settings
+@import "px-defaults-design/_settings.defaults.scss";
+
+// Generic
+@import "px-helpers-design/_generic.helpers.scss";
+
+// Objects
+$inuit-list-inline-delimit-character: "";
+@import "px-list-inline-design/_objects.list-inline.scss";
+
+.footer-container {
+    background: var(--app-footer-background-color);
+    height: 60px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.footer-container * {
+    color: var(--app-footer-color);
+}
+
+.footer-container li {
+    margin-left: 7px;
+}
+
+.footer-copy {
+    margin-left: 40px;
+    font-size: 12px;
+}
+
+.footer-link {
+    font-size: 12px;
+    text-align: right;
+    text-decoration: none;
+}
+

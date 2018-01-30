@@ -1,0 +1,76 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- I18n supoprt -->
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../bower_components/px-card/px-card.html">
+
+<link rel="import" href="auto-refresh-behavior.html">
+<link rel="import" href="view-1-styles.html">
+
+<dom-module id="view-1">
+    <template>
+        <style include="view-1-css"></style>
+
+        <header class="header">
+            <h1 class="title">
+                [[localize("title")]]
+            </h1>
+        </header>
+
+        <px-card icon="px-fea:dashboard" header-text="[[localize('card.header')]]">
+            <p>
+                [[localize("card.content")]]
+            </p>
+            <button type="button" id="MyButton" value="initial value" class="btn">[[localize("button.label")]]</button>
+        </px-card>
+
+    </template>
+
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "view-1",
+
+            behaviors: [
+                Polymer.AppLocalizeBehavior,
+                window.geAppBehaviors.autoRefreshBehavior
+            ],
+
+            properties: {
+                language: {
+                    type: String,
+                    value: function () {
+                        return document.createElement("iron-meta").byKey("language");
+                    }
+                }
+            },
+
+            listeners: {
+                "MyButton.tap": "changeValue"
+            },
+
+            changeValue: function () {
+                this.$.MyButton.setAttribute("value", "modified value");
+            },
+
+            attached: function () {
+                this.loadResources(this.resolveUrl(this.is + "-labels.json"));
+            },
+
+            ready: function () {
+                console.log("view 1 ready()");
+            },
+
+            refresh: function () {
+                // View refresh logic
+                console.log("Refresh view 1");
+            }
+
+        });
+    </script>
+</dom-module>

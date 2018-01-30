@@ -1,0 +1,50 @@
+{
+  "name": "ge__app",
+  "version": "2.0.0",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/bower_components",
+    "test",
+    "tests",
+    "target",
+    "test-target",
+    "sass"
+  ],
+  "dependencies": {
+    "app-localize-behavior": "2.0.x",
+    "app-route": "PolymerElements/app-route#1.0.x",
+    "iron-meta": "2.0.x",
+    "iron-resizable-behavior": "2.0.x",
+    "polymer": "1.9.x",
+    "px-app-helpers": "1.4.x",
+    "px-app-nav": "2.0.x",
+    "px-branding-bar": "1.0.x",
+    "px-card": "1.0.x",
+    "px-dark-theme": "2.0.x",
+    "px-dropdown": "4.0.x",
+    "px-icon-set": "2.1.x",
+    "px-login": "2.0.x",
+    "px-modal": "2.0.x",
+    "px-spinner": "2.1.x",
+    "px-theme": "3.0.x",
+    "px-vis-timeseries": "3.0.x",
+    "webcomponentsjs": "0.7.x"
+  },
+  "devDependencies": {
+    "iron-test-helpers": "1.4.x",
+    "px-box-sizing-design": "1.0.x",
+    "px-buttons-design": "2.0.x",
+    "px-defaults-design": "2.0.x",
+    "px-helpers-design": "1.0.x",
+    "px-list-inline-design": "1.0.x",
+    "px-normalize-design": "1.0.x",
+    "px-shadows-design": "1.0.x"
+  },
+  "resolutions": {
+    "px-app-helpers": "1.4.x",
+    "webcomponentsjs": "0.7.x"
+  }
+}

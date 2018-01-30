@@ -1,0 +1,26 @@
+@import "ge-app-layout-common.scss";
+
+:host {
+    display: block;
+    padding-left: $vertical-nav-width;
+}
+
+// Vertical nav
+.nav-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+// Footer at the bottom of the viewport (at least)
+.view-wrapper {
+    display: flex;
+
+    main {
+        flex: 1;
+        min-width: 0;
+        min-height: calc(100vh - #{$branding-bar-height} - #{calculateRem($footer-height-px)});
+    }
+}

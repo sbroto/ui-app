@@ -1,0 +1,126 @@
+<!-- import polymer -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- I18n support -->
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../bower_components/px-branding-bar/px-branding-bar.html">
+<link rel="import" href="../../bower_components/px-app-nav/px-app-nav.html">
+
+<!-- App components -->
+<link rel="import" href="../ge-app-footer/ge-app-footer.html">
+
+<link rel="import" href="ge-app-vertical-layout-styles.html">
+
+<dom-module id="ge-app-vertical-layout">
+    <template>
+        <style include="ge-app-vertical-layout-css"></style>
+
+        <!-- Fixed vertical app nav-->
+        <px-app-nav
+            vertical
+            class="nav-bar"
+            items="[[_internalNavItems]]"
+            selected-route="{{selectedRoute}}"
+            selected="{{selectedItem}}">
+        </px-app-nav>
+
+        <!-- Branding bar -->
+        <px-branding-bar
+            application-title="[[localize('title')]]">
+        </px-branding-bar>
+
+        <!-- Views -->
+        <div class="view-wrapper">
+            <main>
+                <slot></slot>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <ge-app-footer footer-links="[[footerLinks]]">
+        </ge-app-footer>
+
+    </template>
+
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "ge-app-vertical-layout",
+
+            behaviors: [
+                Polymer.AppLocalizeBehavior
+            ],
+
+            properties: {
+                navItems: {
+                    type: Array,
+                    value: function () {
+                        return [];
+                    }
+                },
+                _internalNavItems: {
+                    type: Array
+                },
+                footerLinks: {
+                    type: Array
+                },
+
+                selectedRoute: {
+                    type: Array,
+                    notify: true
+                },
+                selectedItem: {
+                    type: Object,
+                    notify: true
+                },
+
+                language: {
+                    type: String
+                },
+                resources: {
+                    type: Object
+                }
+            },
+
+            observers: [
+                "_onNavItemsChange(localize, navItems)",
+                "_onSelectedItemChange(selectedItem)"
+            ],
+
+            _onNavItemsChange: function (localize) {
+                const navItemsTemp =
+                    Array.isArray(this.navItems) ? this.navItems.slice() : [];
+
+                navItemsTemp.push({
+                    icon: "px-nav:log-out",
+                    label: localize("Sign Out"),
+                    id: "logout"
+                });
+
+                this._internalNavItems = navItemsTemp.slice();
+
+                if (this._internalNavItems[0] && !this.selectedItem && this._internalNavItems[0].id !== "logout") {
+                    this.selectedItem = this._internalNavItems[0];
+                }
+
+            },
+
+            _onSelectedItemChange: function () {
+                if (this.selectedItem) {
+                    switch (this.selectedItem.id) {
+                        case "logout":
+                            window.location = "/logout";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
+    </script>
+</dom-module>

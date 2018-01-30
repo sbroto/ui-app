@@ -1,0 +1,17 @@
+// Common styles for all the views
+@import "view-common.scss";
+
+// Specific styles for the current view
+.ts-graph {
+    display: block;
+    height: 400px;
+}
+
+.dropdown-container {
+    display: flex;
+    align-items: center;
+
+    px-dropdown {
+        margin-right: 1rem;
+    }
+}

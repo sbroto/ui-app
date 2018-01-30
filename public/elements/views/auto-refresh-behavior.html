@@ -1,0 +1,57 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script>
+
+    "use strict";
+
+    window.geAppBehaviors = window.geAppBehaviors || {};
+
+    window.geAppBehaviors.autoRefreshBehavior = {
+
+        properties: {
+            autoRefresh: {
+                type: Boolean,
+                value: false
+            },
+
+            refreshInterval: {
+                type: Number,
+                value: 20
+            }
+        },
+
+        observers: [
+            "_onAutoRefreshChanged(autoRefresh, refreshInterval)"
+        ],
+
+        _onAutoRefreshChanged: function () {
+            if (this.autoRefresh && typeof this.refresh === "function" && this.refreshInterval) {
+                this.startRefreshTimer();
+            } else {
+                this.clearRefreshTimer();
+            }
+        },
+
+        startRefreshTimer: function () {
+            const msInSecond = 1000;
+
+            if (this.timer) {
+                this.clearRefreshTimer();
+            }
+
+            if (typeof this.refresh === "function") {
+                this.refresh();
+                this.timer = window.setInterval(this.refresh.bind(this), this.refreshInterval * msInSecond);
+            }
+
+        },
+
+        clearRefreshTimer: function () {
+            if (this.timer) {
+                window.clearInterval(this.timer);
+                this.timer = null;
+            }
+        }
+    };
+
+</script>

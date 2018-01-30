@@ -1,0 +1,14 @@
+{
+    "en": {
+        "header": "Error",
+
+        "error": "Technical error",
+        "error.technical.data": "No data",
+        "error.default": "An error has happened",
+        "error.session": "You are not authorized to access to the data or your session has expired.",
+
+        "ok": "OK",
+        "cancel": "Cancel",
+        "signOut": "Sign Out"
+    }
+}

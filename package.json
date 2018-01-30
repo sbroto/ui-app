@@ -1,0 +1,55 @@
+{
+  "name": "ge__app",
+  "version": "2.0.0",
+  "private": true,
+  "engines": {
+    "node": "8.9.x"
+  },
+  "scripts": {
+    "start": "node server/app.js",
+    "test-node": "mocha",
+    "test-ui": "wct"
+  },
+  "dependencies": {
+    "cfenv": "1.0.x",
+    "compression": "1.7.x",
+    "connect-prism": "1.0.x",
+    "connect-redis": "3.3.x",
+    "cookie-parser": "1.4.x",
+    "express": "4.16.x",
+    "express-http-proxy": "1.1.x",
+    "express-session": "1.15.x",
+    "helmet": "3.9.x",
+    "https-proxy-agent": "2.1.x",
+    "moment": "2.19.x",
+    "passport": "0.4.x",
+    "passport-predix-oauth": "0.1.x",
+    "request": "2.83.x",
+    "request-promise": "4.2.x"
+  },
+  "devDependencies": {
+    "chai": "4.1.x",
+    "eslint-plugin-html": "4.0.x",
+    "gulp": "3.9.x",
+    "gulp-artifactory-upload": "1.3.x",
+    "gulp-autoprefixer": "4.0.x",
+    "gulp-clean": "0.3.x",
+    "gulp-clean-css": "3.9.x",
+    "gulp-eslint": "4.0.x",
+    "gulp-htmlmin": "3.0.x",
+    "gulp-inline-source": "3.1.x",
+    "gulp-livereload": "3.8.x",
+    "gulp-nodemon": "2.2.x",
+    "gulp-rename": "1.2.x",
+    "gulp-sass": "3.1.x",
+    "gulp-sequence": "0.4.x",
+    "gulp-style-modules": "0.1.x",
+    "gulp-util": "3.0.x",
+    "gulp-vulcanize": "6.1.x",
+    "gulp-zip": "4.0.x",
+    "merge-stream": "1.0.x",
+    "mocha": "3.4.x",
+    "node-sass-import-once": "1.2.x",
+    "web-component-tester": "5.0.x"
+  }
+}

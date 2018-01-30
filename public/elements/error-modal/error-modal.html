@@ -1,0 +1,195 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../bower_components/px-icon-set/px-icon-set.html" />
+<link rel="import" href="../../bower_components/px-icon-set/px-icon.html" />
+<link rel="import" href="../../bower_components/px-modal/px-modal.html">
+
+<!-- I18n supoprt -->
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+
+<link rel="import" href="error-modal-styles.html">
+
+<dom-module id="error-modal">
+
+    <style include="error-modal-css"></style>
+
+    <template>
+        <px-modal
+            id="errorModal"
+            modal-id="internalErrorModal"
+            modal-heading="[[localize('header')]]"
+            btn-modal-positive="[[positiveButtonLabel]]"
+            btn-modal-negative="[[negativeButtonLabel]]"
+            btn-modal-positive-clicked-event-name="[[positiveButtonEvent]]"
+            btn-modal-negative-clicked-event-name="[[negativeButtonEvent]]">
+            <px-icon icon="[[icon]]" class="error-icon"></px-icon>
+            <span>[[msg]]</span>
+        </px-modal>
+    </template>
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "error-modal",
+            behaviors: [
+                Polymer.AppLocalizeBehavior
+            ],
+
+            properties: {
+                language: {
+                    type: String,
+                    value: function () {
+                        return document.createElement("iron-meta").byKey("language");
+                    }
+                },
+
+                positiveButtonEvent: {
+                    type: String,
+                    value: "btnErrorModalPositiveClicked"
+                },
+                negativeButtonEvent: {
+                    type: String,
+                    value: "btnErrorModalNegativeClicked"
+                },
+
+                msg: {
+                    type: String
+                },
+                icon: {
+                    type: String
+                },
+                positiveButtonLabel: {
+                    type: String
+                },
+                negativeButtonLabel: {
+                    type: String
+                },
+                labels: {
+                    type: Object,
+                    value: function () {
+                        return {
+                            errorMsg: "",
+                            defaultErrMsg: "",
+                            sessionErrMsg: "",
+                            noDataErrMsg: "",
+                            ok: "",
+                            cancel: "",
+                            signOut: ""
+                        };
+                    }
+                },
+
+                logoutUrl: {
+                    type: String,
+                    value: "/logout"
+                }
+            },
+
+            observers: [
+                "_localizeReady(localize)"
+            ],
+            attached: function () {
+                this.loadResources(this.resolveUrl("error-modal-labels.json"));
+                this.listen(this.$.errorModal, this.positiveButtonEvent, "_positiveAction");
+                this.listen(this.$.errorModal, this.negativeButtonEvent, "_negativeAction");
+            },
+            _localizeReady: function (localize) {
+                this.labels.errorMsg = localize("error");
+                this.labels.ok = localize("ok");
+                this.labels.cancel = localize("cancel");
+                this.labels.signOut = localize("signOut");
+                this.labels.defaultErrMsg = localize("error.default");
+                this.labels.sessionErrMsg = localize("error.session");
+                this.labels.noDataErrMsg = localize("error.technical.data");
+
+            },
+            detached: function () {
+                this.unlisten(this.$.errorModal, this.positiveButtonEvent, "_positiveAction");
+                this.unlisten(this.$.errorModal, this.negativeButtonEvent, "_negativeAction");
+            },
+            _positiveAction: function () {
+                this._visible = false;
+                if (this._errorType === "session") {
+                    window.location.replace(this.logoutUrl);
+                }
+            },
+            _negativeAction: function () {
+                this._visible = false;
+            },
+
+            _showErrorModal: function (errorType) {
+                if (!this._visible) {
+                    this._errorType = errorType;
+                    this._visible = true;
+                    this.$.errorModal.modalButtonClicked();
+                }
+            },
+
+            // eslint-disable-next-line max-statements
+            _notifyError: function (errorType) {
+                switch (errorType) {
+                    case "session" :
+                        if (!this._visible) {
+                            this.icon = "px-nav:log-out";
+                            this.msg = this.labels.sessionErrMsg;
+                            this.positiveButtonLabel = this.labels.signOut || "Sign Out";
+                            this.negativeButtonLabel = this.labels.cancel;
+                            this._showErrorModal(errorType);
+                        }
+                        break;
+                    case "no_data":
+                        if (!this._visible) {
+                            this.icon = "px-nav:close";
+                            this.msg = this.labels.noDataErrMsg;
+                            this.positiveButtonLabel = this.labels.ok || "OK";
+                            this.negativeButtonLabel = "";
+                            this._showErrorModal(errorType);
+                        }
+                        break;
+                    case "error" :
+                    default :
+                        if (!this._visible) {
+                            this.icon = "px-nav:close";
+                            this.msg = this.labels.errorMsg;
+                            this.positiveButtonLabel = this.labels.ok || "OK";
+                            this.negativeButtonLabel = "";
+                            this._showErrorModal(errorType);
+                        }
+                        break;
+                }
+            },
+
+            handleError: function (lastError, otherInfo) {
+                const HTTP_BAD_REQUEST_STATUS = 400;
+                const HTTP_UNAUTHORIZED_STATUS = 401;
+                const HTTP_FORBIDDEN_STATUS = 403;
+                const HTTP_NOT_FOUND_STATUS = 404;
+                const HTTP_INTERNAL_SERVER_ERROR_STATUS = 500;
+
+                if (lastError) {
+                    switch (lastError.status) {
+                        case HTTP_UNAUTHORIZED_STATUS:
+                        case HTTP_FORBIDDEN_STATUS:
+                            this._notifyError("session");
+                            break;
+                        case HTTP_NOT_FOUND_STATUS:
+                            this._notifyError("no_data");
+                            break;
+                        case HTTP_BAD_REQUEST_STATUS:
+                        case HTTP_INTERNAL_SERVER_ERROR_STATUS:
+                        default:
+                            this._notifyError("error");
+                            break;
+                    }
+                }
+
+                if (otherInfo) {
+                    console.log(otherInfo);
+                }
+            }
+        });
+    </script>
+</dom-module>

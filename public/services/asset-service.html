@@ -1,0 +1,77 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="asset-service">
+
+    <script>
+
+        "use strict";
+
+        Polymer({
+            is: "asset-service",
+            properties: {
+
+                serviceEndpoint: {
+                    type: String,
+                    value: "/api/predix-asset"
+                },
+
+                query: {
+                    type: String,
+                    value: "/asset"
+                },
+
+                result: {
+                    type: Array,
+                    notify: true
+                },
+
+                auto: {
+                    type: Boolean,
+                    value: false
+                },
+
+                lastError: {
+                    type: Object,
+                    notify: true
+                }
+            },
+
+            observers: [
+                "_onAutoChanged(auto, query)"
+            ],
+
+            _onAutoChanged: function () {
+                if (this.auto) {
+                    this.generateRequest();
+                }
+            },
+
+            generateRequest: function () {
+                const self = this;
+
+                return fetch(this.serviceEndpoint + this.query, {
+                    credentials: "include",
+                    headers: new Headers({"content-type": "application/json"}),
+                    method: "GET"
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            self.lastError = {status: response.status};
+                            throw self.lastError;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        self.result = data;
+                    })
+                    .catch(function (error) {
+                        self.lastError = error;
+                    });
+
+            }
+
+        });
+
+    </script>
+</dom-module>

@@ -1,0 +1,21 @@
+// Common styles for all the views
+
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px var(--px-card-border-color, grey) solid;
+    height: 3.3em;
+    background-color: var(--px-base-background-color);
+}
+
+.title {
+    display: flex;
+    font-size: 2em;
+    font-weight: normal;
+    margin: 0;
+}
+
+px-card {
+    background-color: var(--px-base-background-color);
+}

@@ -1,0 +1,144 @@
+#!groovy
+
+def serverName = 'devcloud'
+// Define DevCloud Artifactory for publishing non-docker image artifacts
+def artifactServer = Artifactory.server(serverName)
+
+// Change Snapshot to your own DevCloud Artifactory repo name
+def Repository = 'IEWMR-SNAPSHOT'
+
+def downloadSpec = ''
+
+def manifestFile = ''
+
+pipeline {
+    agent none
+    parameters {
+        choice(
+            choices: 'integration\nproduction',
+            description: 'Promotion environment?',
+            name: 'PROMOTION_ENV')
+        string(name: 'appName', defaultValue: '', description: 'Name of application')
+        string(name: 'hostname', defaultValue: '', description: 'Hostname of application')
+        string(name: 'DEPLOY_URL', defaultValue: 'https://propel.ci.build.ge.com', description: '')
+        string(name: 'DEPLOY_ENV', defaultValue: 'predix-cf1', description: 'Predix US West by default')
+        string(name: 'CF_Org', defaultValue: 'European_Foundry_Basic', description: 'Predix orgs')
+        string(name: 'CF_Space', defaultValue: 'demos-dev', description: 'Predix space')
+        string(name: 'DEPLOY_TOKEN', defaultValue: '', description: 'Deploy token associated with given space')
+    }
+    stages {
+        stage ('Clean workspace') {
+            when {
+                expression {
+                    return params.PROMOTION_ENV == 'integration'
+                }
+            }
+            agent {
+                docker {
+                    image 'alpine'
+                    label 'dind'
+                }
+            }
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage ('Download artifact') {
+            when {
+                expression {
+                    return params.PROMOTION_ENV == 'integration'
+                }
+            }
+            agent {
+                docker {
+                    image 'golang:1.9.2-alpine3.6'
+                    label 'dind'
+                }
+            }
+            environment {
+                ARTIFACTORY = credentials('ARTIFACTORY_CRED')
+            }
+            steps {
+                sh "apk update"
+                sh "apk add git"
+                sh "go get github.com/jfrogdev/jfrog-cli-go/jfrog-cli/jfrog"
+                echo 'Downloading Artifacts to Artifactory'
+                script {
+                    appName = sh (
+                        script: "basename `git remote show -n origin | grep Fetch | cut -d: -f2- | sed 's/\\.git//g'`",
+                        returnStdout: true
+                    ).trim()
+
+                    downloadSpec = """{
+                        "files": [
+                            {
+                                "pattern": "${Repository}/com/ge/digital/${appName}/*.zip",
+                                "sortBy" : ["created"],
+                                "sortOrder": "desc",
+                                "limit": 1,
+                                "target": "${env.WORKSPACE}/${appName}.zip"
+                            }
+                        ]
+                    }"""
+                }
+                writeFile file: "downloadSpec.json", text: downloadSpec, encoding: "UTF-8"
+                sh "jfrog rt c ${serverName} --url=${artifactServer.url} --user=$ARTIFACTORY_USR --password=$ARTIFACTORY_PSW"
+                sh "jfrog rt dl --server-id=${serverName} --flat=true --spec=downloadSpec.json"
+            }
+            post {
+                success {
+                    echo 'Download Artifact to Artifactory stage completed'
+                }
+                failure {
+                    echo 'Download Artifact to Artifactory stage failed'
+                }
+            }
+        }
+
+        stage ('PCD Deploy') {
+            agent {
+                docker {
+                    image 'repo.ci.build.ge.com:8443/pcd'
+                    label 'dind'
+                }
+            }
+            environment {
+                CLOUD_FOUNDRY = credentials('Deployment_Credential')
+            }
+            steps {
+                script {
+                    if (params.PROMOTION_ENV == 'integration') {
+                        manifestFile = 'manifest-int.yml'
+                    } else {
+                        manifestFile = 'manifest-prod.yml'
+                    }
+                }
+
+                sh "pcd deploy auth -a ${params.DEPLOY_URL} --tid ${params.DEPLOY_TOKEN} -u $CLOUD_FOUNDRY_USR -o ${params.CF_Org} -s ${params.CF_Space} -e ${params.DEPLOY_ENV}"
+
+                sh "pcd deploy --hn ${params.hostname} -a *.zip -m ${manifestFile} -v ${env.BUILD_NUMBER} -n ${params.appName}"
+
+            }
+            post {
+                success {
+                    echo "Deploy Artifacts stage completed"
+                }
+                failure {
+                    echo "Deploy Artifacts stage failed"
+                }
+            }
+        }
+
+    }
+    post {
+        success {
+            echo 'Promotion completed'
+        }
+        failure {
+            echo 'Promotion failed'
+            mail to:"stephane.pilla@ge.com, mathieu.clement@ge.com", subject:"FAILURE: ${currentBuild.fullDisplayName}", body: "Something went wrong with the promotion. See error in here: ${env.BUILD_URL}"
+        }
+    }
+
+}

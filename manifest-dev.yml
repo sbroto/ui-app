@@ -1,0 +1,20 @@
+---
+applications:
+  - name: ge__app-dev
+    memory: 64M
+    buildpack: https://github.com/cloudfoundry/nodejs-buildpack
+    command: node server/app.js
+    path: dist
+#services:
+ # - <your-name>-uaa-instance
+ # - <your-name>-acs-instance
+ # - <your-name>-predix-cache-instance
+ # - <your-name>-timeseries-instance
+ # - <your-name>-asset-instance
+env:
+    node_env: cloud
+    # Add these values for authentication in the cloud
+    #userClientId: {Enter client ID  using for user authentication, e.g. app-client-id}
+    #userClientSecret: {Enter client secret using for user authentication}
+    #appClientId: {Enter client ID  using for apis call}
+    #appClientSecret: {Enter client secret using for apis call}

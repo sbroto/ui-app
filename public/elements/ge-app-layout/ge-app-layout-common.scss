@@ -1,0 +1,26 @@
+// Settings
+@import "px-defaults-design/_settings.defaults.scss";
+
+// Objects
+@import "px-shadows-design/_objects.shadows.scss";
+
+$branding-bar-height: 2rem;
+$horizontal-nav-height: 4rem;
+$vertical-nav-width: 4rem;
+$footer-height-px: 60px;
+
+.nav-bar {
+    z-index: 1000;
+    --px-app-nav-box-shadow: none;
+}
+
+ge-app-footer {
+    --app-footer-color: var(--px-base-text-color);
+    --app-footer-background-color: var(--px-app-nav-item-background-color);
+}
+
+// Workaround to never hide the branding bar
+px-branding-bar {
+    display: flex !important;
+    visibility: visible !important;
+}
