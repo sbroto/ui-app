@@ -41,3 +41,18 @@ to your node reverse proxy and record the corresponding mocks.
 Current limitations :
 - Corporate proxies are not managed for recording (no bluesso)
 
+## Install Redis locally
+
+### Install docker for mac : 
+https://docs.docker.com/docker-for-mac/install/
+### Start docker app
+### Download redis image (using 'Internet' wifi): 
+
+docker pull redis
+### Create and start redis container :
+
+docker container run -p 6379:6379 --name local-redis -d redis
+### If docker is restarted, the container has to be manually started :
+
+docker ps -a
+docker start <container id>
