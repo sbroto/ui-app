@@ -47,7 +47,11 @@
                     value: function () {
                         return document.createElement("iron-meta").byKey("language");
                     }
-                }
+                },
+				serviceEndpoint: {
+					type: String,
+					value: "/api/cim-service/info"
+				},
             },
 
             listeners: {
@@ -56,7 +60,27 @@
 
             changeValue: function () {
                 this.$.MyButton.setAttribute("value", "modified value");
-            },
+
+				return fetch(this.serviceEndpoint + this.query, {
+					credentials: "include",
+					headers: new Headers({"content-type": "application/json"}),
+					method: "GET"
+				})
+					.then(function (response) {
+						if (!response.ok) {
+							self.lastError = {status: response.status};
+							throw self.lastError;
+						}
+						return response.json();
+					})
+					.then(function (data) {
+						console.log(data);
+					})
+					.catch(function (error) {
+						self.lastError = error;
+					});
+
+			},
 
             attached: function () {
                 this.loadResources(this.resolveUrl(this.is + "-labels.json"));

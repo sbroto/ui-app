@@ -49,7 +49,7 @@ app.set("trust proxy", 1);
 app.use(cookieParser("predixsample"));
 app.use(compression());
 
-/* const redisStore = new RedisStore({
+/*const redisStore = new RedisStore({
     host: config.redis.host,
     port: config.redis.port,
     pass: config.redis.password,

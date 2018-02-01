@@ -68,8 +68,8 @@ const getCredentials = {
             accessKeySecret: credentials.secret_access_key
         };
     },
-    "custom-service": function (config, credentials) {
-        config.proxy["custom-service"] = {
+    "cim-service": function (config, credentials) {
+        config.proxy["cim-service"] = {
             endpoint: credentials.uri
         };
     }

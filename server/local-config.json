@@ -83,9 +83,9 @@
                 ],
                 "user-provided": [
                     {
-                        "name": "custom-service",
+                        "name": "cim-service",
                         "credentials": {
-                            "uri": "{URL of the custom microservice}"
+                            "uri": "https://mycimapp-dev.run.aws-usw02-pr.ice.predix.io"
                         }
                     }
                 ]
