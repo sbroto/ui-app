@@ -87,6 +87,12 @@
                         "credentials": {
                             "uri": "https://mycimapp-dev.run.aws-usw02-pr.ice.predix.io"
                         }
+                    },
+                    {
+                        "name": "cim-cups-service",
+                        "credentials": {
+                            "uri": "https://simpleapp-dev.run.aws-usw02-pr.ice.predix.io"
+                        }
                     }
                 ]
             }
