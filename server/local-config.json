@@ -1,10 +1,10 @@
 {
     "development": {
         "env": {
-            "userClientId": "{UAA Client ID for user authentication}",
-            "userClientSecret": "{UAA Client Secret for user authentication}",
-            "appClientId": "{UAA Client ID created for api call}",
-            "appClientSecret": "{UAA Client Secret for api call}",
+            "userClientId": "rest-client",
+            "userClientSecret": "rest-client",
+            "appClientId": "rest-client",
+            "appClientSecret": "rest-client",
             "PORT": 5000
         },
         "vcap": {
@@ -17,7 +17,7 @@
                             "uri": "https://predix-asset.run.aws-usw02-pr.ice.predix.io",
                             "zone": {
                                 "http-header-name": "Predix-Zone-Id",
-                                "http-header-value": "{The Zone ID for the Asset Service Created}"
+                                "http-header-value": "6afba6c7-fe8e-4d1b-a61b-c8a8ede98813"
                             }
                         }
                     }
@@ -30,7 +30,7 @@
                             "query": {
                                 "uri": "https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints",
                                 "zone-http-header-name": "Predix-Zone-Id",
-                                "zone-http-header-value": "{The Zone ID for the Timeseries Service Created}"
+                                "zone-http-header-value": "5068558a-0725-45ae-a981-254ccf3b4e88"
                             }
                         }
                     }
@@ -40,7 +40,7 @@
                         "name": "uaa-service",
                         "label": "predix-uaa",
                         "credentials": {
-                            "uri": "{The UAA URI end point to get auth token}"
+                            "uri": "https://600fda87-ac3f-4b1e-803b-7efeceebf5df.predix-uaa.run.aws-usw02-pr.ice.predix.io"
                         }
                     }
                 ],

@@ -50,13 +50,13 @@ app.use(cookieParser("predixsample"));
 app.use(compression());
 
 const redisStore = new RedisStore({
-    host: config.redis.host,
+    /*host: config.redis.host,
     port: config.redis.port,
     pass: config.redis.password,
     logErrors: function () {
         console.error("Redis connection not found.");
         throw "Redis connection not found.";
-    }
+    }*/
 });
 
 app.use(session({
