@@ -21,7 +21,7 @@ const passportConfig = require("./passport-config");
 // ACS middleware
 const acs = require("./acs");
 // Configure redis
-const RedisStore = require("connect-redis")(session);
+// const RedisStore = require("connect-redis")(session);
 // Only used if you have configured properties for UAA
 let passport;
 let mainAuthenticate;
@@ -49,18 +49,18 @@ app.set("trust proxy", 1);
 app.use(cookieParser("predixsample"));
 app.use(compression());
 
-const redisStore = new RedisStore({
-    /*host: config.redis.host,
+/* const redisStore = new RedisStore({
+    host: config.redis.host,
     port: config.redis.port,
     pass: config.redis.password,
     logErrors: function () {
         console.error("Redis connection not found.");
         throw "Redis connection not found.";
-    }*/
-});
+    }
+});*/
 
 app.use(session({
-    store: redisStore,
+    // store: redisStore,
     secret: "predixsample",
     name: "cookie_name",
     proxy: true,
