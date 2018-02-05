@@ -81,7 +81,7 @@ rules:
   func-name-matching: error
   func-style: [error, declaration]
   id-length: [error, {exceptions: [i, j, k, x, y, z]}]
-  indent: [error, 4, {
+  indent: [warn, 4, {
     FunctionDeclaration: {parameters: first},
     CallExpression: {arguments: 1},
     SwitchCase: 1,
