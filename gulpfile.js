@@ -92,24 +92,24 @@ gulp.task("dist:archive", getTask("dist.archive"));
 // -----------------------------------------------------------------------------
 // Task: Deploy : deploy dist/ archive
 // -----------------------------------------------------------------------------
-gulp.task("deploy:artifactory", getTask("deploy.artifactory"));
+// Gulp.task("deploy:artifactory", getTask("deploy.artifactory"));
 
 // -----------------------------------------------------------------------------
 // Task: Deploy : get credentials
 // -----------------------------------------------------------------------------
-gulp.task("deploy:credentials", getTask("deploy.credentials"));
+// Gulp.task("deploy:credentials", getTask("deploy.credentials"));
 
 // -----------------------------------------------------------------------------
 // Task: Deploy (for jenkins)
 // -----------------------------------------------------------------------------
-gulp.task("deploy", function (cb) {
-    gulpSequence(
-        "dist",
-        "dist:archive",
-        "deploy:credentials",
-        "deploy:artifactory"
-    )(cb);
-});
+/* Gulp.task("deploy", function (cb) {
+ gulpSequence(
+ "dist",
+ "dist:archive",
+ "deploy:credentials",
+ "deploy:artifactory"
+ )(cb);
+ });*/
 // -----------------------------------------------------------------------------
 //  Task: Default (compile source, start server, watch for changes)
 // -----------------------------------------------------------------------------

@@ -73,11 +73,11 @@ const getCredentials = {
             endpoint: credentials.uri
         };
     },
-	"cim-cups-service": function (config, credentials) {
-		config.proxy["cim-cups-service"] = {
-			endpoint: credentials.uri
-		};
-	}
+    "cim-cups-service": function (config, credentials) {
+        config.proxy["cim-cups-service"] = {
+            endpoint: credentials.uri
+        };
+    }
 };
 
 function exportLocalConfig(nodeEnv) {
