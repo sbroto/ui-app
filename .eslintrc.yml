@@ -30,7 +30,7 @@ rules:
   no-iterator: error
   no-lone-blocks: error
   no-loop-func: error
-  no-magic-numbers: [error, {ignoreArrayIndexes: true, detectObjects: false, ignore: [-1, 0, 1, 100, 1000] }]
+  no-magic-numbers: [error, {ignoreArrayIndexes: true, detectObjects: false, ignore: [-1, 0, 1, 100] }]
   no-multi-spaces: error
   no-multi-str: error
   no-new-func: error
@@ -81,7 +81,7 @@ rules:
   func-name-matching: error
   func-style: [error, declaration]
   id-length: [error, {exceptions: [i, j, k, x, y, z]}]
-  indent: [warn, 4, {
+  indent: [error, 4, {
     FunctionDeclaration: {parameters: first},
     CallExpression: {arguments: 1},
     SwitchCase: 1,
@@ -128,17 +128,9 @@ rules:
   arrow-body-style: [error, as-needed]
   arrow-parens: [error, as-needed]
   arrow-spacing: error
-  prefer-arrow-callback: [warn, {allowNamedFunctions: true}]
   no-confusing-arrow: error
   no-var: error
   prefer-const: warn
-  prefer-destructuring: warn
-  object-shorthand: warn
-  prefer-spread: warn
-  prefer-rest-param: warn
-  rest-spread-spacing: error
-  prefer-numeric-literals: warn
-  prefer-template: warn
   max-statements: [warn, 15, {ignoreTopLevelFunctions: true}]
 
 env:
